@@ -1,9 +1,15 @@
-import Image from "next/image";
+import { HeroSlider } from "@/components/home/hero-slider";
+import { NewArrivals } from "@/components/home/new-arrivals";
+import { HowBorrowingWorks } from "@/components/home/how-borrowing-works";
+import { ReaderReviews } from "@/components/home/reader-reviews";
 
 export default function Home() {
   return (
-    <div>
-     
-    </div>
+    <>
+      <HeroSlider />
+      <NewArrivals />
+      <HowBorrowingWorks />
+      <ReaderReviews />
+    </>
   );
 }

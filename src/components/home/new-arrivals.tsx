@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getLatestBooks } from "@/lib/books";
-import { BookCard } from "@/components/book-card";
+import { BookCard } from "@/app/all-books/_component/book-card";
 import { SectionHeading } from "@/components/section-heading";
 
 export function NewArrivals() {
   // New books first: db.books.find().sort({ createdAt: -1 }).limit(6)
-  const latestBooks = getLatestBooks(6);
+  const latestBooks = getLatestBooks(3);
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">

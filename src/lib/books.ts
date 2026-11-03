@@ -183,3 +183,46 @@ function slugify(value: string): string {
 
   return slug || "book";
 }
+
+/* ------------------------------------------------------------------ *
+ * Backend books — GET ${NEXT_PUBLIC_SERVER_BASE_URL}/books
+ * ------------------------------------------------------------------ */
+
+/**
+ * Book document returned by the backend (a MongoDB `books` document).
+ *
+ * Differs from the dummy `Book` above: MongoDB uses `_id`, fields can be
+ * missing or empty, and `image` is not always a URL string yet.
+ */
+export type ApiBook = {
+  _id: string;
+  title?: string;
+  author?: string;
+  category?: string;
+  /** Cover URL — currently `{}` for records saved before uploads were wired. */
+  image?: unknown;
+  description?: string;
+};
+
+/** Minimal book shape the reusable `BookCard` needs to render. */
+export type BookCardData = {
+  id: string;
+  title: string;
+  author: string;
+  category?: string;
+  /** Cover URL — the card shows a placeholder when it is missing. */
+  image?: string;
+};
+
+/** Map a backend book onto the shape `BookCard` renders. */
+export function toBookCardData(book: ApiBook): BookCardData {
+  const image = typeof book.image === "string" ? book.image.trim() : "";
+
+  return {
+    id: book._id,
+    title: book.title?.trim() || "Untitled",
+    author: book.author?.trim() || "Unknown author",
+    category: book.category?.trim() || undefined,
+    image: image || undefined,
+  };
+}

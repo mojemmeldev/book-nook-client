@@ -6,6 +6,7 @@ import { BookPlus, Loader2, Upload } from "lucide-react";
 
 import { toast } from "@/components/ui/toast"
 import { useSession } from "@/lib/auth-client";
+import { uploadImage } from "@/lib/upload-image";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,25 +48,57 @@ const Add_Book_Form = () => {
         e.preventDefault();
         if (!user?.email) return;
 
+        if (!image) {
+            toast.add({ title: "Please select a book cover image.", type: "error" });
+            return;
+        }
+
         setLoading(true);
         try {
             const form = e.currentTarget;
-            const bookData = new FormData(form)
-            const book = Object.fromEntries(bookData.entries())
+            const bookData = new FormData(form);
+            const book = {
+                title: bookData.get("title") as string,
+                author: bookData.get("author") as string,
+                category: bookData.get("category") as string,
+                description: bookData.get("description") as string,
+            };
+
+            // Upload the cover image first, then send its URL with the book.
+            const imageUrl = await uploadImage(image);
 
             const result = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URL}/books`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ ...book, creatorEmail: user.email }),
+                body: JSON.stringify({ ...book, image: imageUrl, creatorEmail: user.email }),
             },
             );
+
+            if (!result.ok) {
+                throw new Error("Failed to add book.");
+            }
 
             const data = await result.json();
 
             console.log(book, "book");
             console.log(data);
+
+            // Reset the form after a successful add.
+            form.reset();
+            setImage(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+            setFormData({ title: "", author: "", category: "", description: "" });
+        }
+        catch (err) {
+            if (err instanceof Error) {
+                toast.add({ title: err.message, type: "error" });
+            } else {
+                toast.add({ title: "Something went wrong adding the book.", type: "error" });
+            }
         }
         finally {
             setLoading(false);

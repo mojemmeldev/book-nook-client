@@ -1,21 +1,29 @@
-import { getCurrentUser } from "@/lib/current-user";
-import { AddBookForm } from "./_component/add-book-form";
 
-export const metadata = {
-  title: "Add Book",
-};
+import React from "react";
+import Add_Book_Form from "./_component/Add_Book_Form";
 
-export default function AddBookPage() {
-  const user = getCurrentUser();
 
+const AddBooksPage = () => {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-      <h1 className="text-3xl font-bold tracking-tight">Add Book</h1>
-      <p className="mt-2 text-muted-foreground">
-        Fill in the details below to add a new book to the BookNook library.
-      </p>
+    <div className="min-h-screen bg-background px-4 py-12">
+      <div className="mx-auto max-w-3xl">
 
-      <AddBookForm user={user} />
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold">
+            Add New Book
+          </h1>
+
+          <p className="mt-2 text-muted-foreground">
+            Fill in the details below to add a new book
+            to our library.
+          </p>
+        </div>
+
+        <Add_Book_Form />
+
+      </div>
     </div>
   );
-}
+};
+
+export default AddBooksPage;

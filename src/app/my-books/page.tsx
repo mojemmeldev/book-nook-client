@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Spinner } from "@/components/ui/spinner";
-import { useSession } from "@/lib/auth-client";
+import { authHeaders, useSession } from "@/lib/auth-client";
 import { BookCard } from "@/app/all-books/_component/book-card";
 import { toBookCardData, type ApiBook, type BookCardData } from "@/lib/books";
 import My_Books_Card from "./_components/My_Books_Card";
@@ -23,9 +23,12 @@ export default function MyBooksPage() {
       return;
     }
 
-    fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URL}/books`, {
-      cache: "no-store",
-    })
+    (async () => {
+      const headers = await authHeaders();
+      fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URL}/books`, {
+        cache: "no-store",
+        headers,
+      })
       .then(async (res) => {
         if (!res.ok) throw new Error("Failed to load books");
         const data = await res.json();
@@ -47,6 +50,7 @@ export default function MyBooksPage() {
         setBooks([]);
       })
       .finally(() => setIsLoading(false));
+    })();
   }, [user?.email]);
 
   // Session still loading

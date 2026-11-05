@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Spinner } from "@/components/ui/spinner";
-import { useSession } from "@/lib/auth-client";
+import { authHeaders, useSession } from "@/lib/auth-client";
 import My_Borrows_Table, { type ApiBorrow } from "./_components/My_Borrows_Table";
 
-export default function MyBorrowsPage() {
+export default function  MyBorrowsPage() {
   const { data: session, isPending } = useSession();
   const user = session?.user;
 
@@ -16,18 +16,24 @@ export default function MyBorrowsPage() {
 
   // Load the borrows that belong to the logged-in user from the backend.
   // Uses GET /books/borrows/:email — the server matches on the `email` field
-  // that the booking form stores with each borrow.
+  // that the booking form stores with each borrow. The better-auth JWT is
+  // sent as a Bearer token so the backend can verify the session.
   useEffect(() => {
     if (!user?.email) {
       return;
     }
 
-    fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_BASE_URL}/books/borrows/${encodeURIComponent(
-        user.email,
-      )}`,
-      { cache: "no-store" },
-    )
+    (async () => {
+      const headers = await authHeaders();
+      fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_BASE_URL}/books/borrows/${encodeURIComponent(
+          user.email,
+        )}`,
+        {
+          cache: "no-store",
+          headers,
+        },
+      )
       .then(async (res) => {
         if (!res.ok) throw new Error("Failed to load borrows");
         const data = await res.json();
@@ -39,6 +45,7 @@ export default function MyBorrowsPage() {
         setBorrows([]);
       })
       .finally(() => setIsLoading(false));
+    })();
   }, [user?.email]);
 
   function handleReturned(id: string) {

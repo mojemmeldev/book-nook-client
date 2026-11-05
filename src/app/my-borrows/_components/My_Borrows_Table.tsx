@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { BookOpen, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { authHeaders } from "@/lib/auth-client";
 import { toast } from "@/components/ui/toast";
 import {
   Table,
@@ -49,9 +50,10 @@ function My_Borrows_Row({ borrow, onReturned }: BorrowRowProps) {
     setIsReturning(true);
 
     try {
+      const headers = await authHeaders();
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_SERVER_BASE_URL}/books/borrows/${borrow._id}`,
-        { method: "DELETE" },
+        { method: "DELETE", headers },
       );
 
       if (!res.ok) throw new Error(`Request failed with status ${res.status}`);

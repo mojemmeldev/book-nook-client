@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/toast"
 import "./globals.css";
 import Navbar from "@/components/layout/navbar";
+import { ThemeScript } from "@/components/layout/theme-script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,8 +19,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "BookNook — Add, Borrow & Return Books",
-    template: "%s | BookNook",
+    default: "BookNook",
+    template: "BookNook | %s",
   },
   description:
     "BookNook is a small online library. See all books, add a new book, borrow a book for a few days, and return it when you are done.",
@@ -30,7 +31,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <ThemeScript />
+      </head>
       <body className="min-h-full flex flex-col">
         <Navbar />
         <main className="flex-1">{children}</main>

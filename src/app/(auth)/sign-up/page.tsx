@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/components/ui/toast";
 import { signUp, signOut } from "@/lib/auth-client";
+import { GoogleButton } from "@/components/auth/google-button";
 
 type FormState = {
   name: string;
@@ -26,6 +27,27 @@ type FormState = {
   photoURL: string;
   password: string;
 };
+
+/**
+ * Assignment password rules:
+ * - at least one uppercase letter
+ * - at least one lowercase letter
+ * - at least 6 characters
+ * Returns an error message, or "" when the password is valid.
+ */
+function validatePassword(password: string): string {
+  if (!password) return "Please enter a password.";
+  if (password.length < 6) {
+    return "Password must be at least 6 characters long.";
+  }
+  if (!/[A-Z]/.test(password)) {
+    return "Password must contain at least one uppercase letter.";
+  }
+  if (!/[a-z]/.test(password)) {
+    return "Password must contain at least one lowercase letter.";
+  }
+  return "";
+}
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -39,6 +61,7 @@ export default function SignUpPage() {
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({
@@ -50,8 +73,23 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    // Block registration with an invalid password and show the error
+    // inside the form (plus a toast).
+    const passwordIssue = validatePassword(form.password);
+    if (passwordIssue) {
+      setPasswordError(passwordIssue);
+      setErrorMessage(passwordIssue);
+      toast.add({
+        title: "Invalid password",
+        description: passwordIssue,
+        type: "error",
+      });
+      return;
+    }
+
     setLoading(true);
     setErrorMessage("");
+    setPasswordError("");
 
     try {
       const { error } = await signUp.email({
@@ -172,13 +210,30 @@ export default function SignUpPage() {
                 id="password"
                 name="password"
                 type="password"
-                placeholder="At least 8 characters"
-                minLength={8}
+                placeholder="At least 6 characters"
                 autoComplete="new-password"
                 value={form.password}
-                onChange={handleChange}
+                aria-invalid={Boolean(passwordError)}
+                onChange={(e) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    password: e.target.value,
+                  }));
+                  // Re-check live so the error clears as soon as it is fixed.
+                  setPasswordError(validatePassword(e.target.value));
+                }}
                 required
               />
+
+              {passwordError ? (
+                <p className="text-sm text-destructive">{passwordError}</p>
+              ) : (
+                <ul className="space-y-0.5 text-xs text-muted-foreground">
+                  <li>• At least 6 characters</li>
+                  <li>• One uppercase letter (A–Z)</li>
+                  <li>• One lowercase letter (a–z)</li>
+                </ul>
+              )}
             </div>
           </CardContent>
 
@@ -194,6 +249,20 @@ export default function SignUpPage() {
                 "Register"
               )}
             </Button>
+
+            {/* Social login (Google) */}
+            <div className="relative w-full">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" aria-hidden="true" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">
+                  or continue with
+                </span>
+              </div>
+            </div>
+
+            <GoogleButton label="Sign up with Google" />
 
             {/* Sign In Link */}
             <p className="text-center text-sm text-muted-foreground">

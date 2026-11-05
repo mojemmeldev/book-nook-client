@@ -8,8 +8,19 @@ const client = new MongoClient(process.env.MONGODB_URI as string);
 const db = client.db("book-nook-user");
 
 export const auth = betterAuth({
-      emailAndPassword: { 
-    enabled: true, 
+      emailAndPassword: {
+    enabled: true,
+    // Assignment password rule: at least 6 characters (plus upper + lower
+    // case, which the sign-up form checks before submitting).
+    minPasswordLength: 6,
+  },
+
+  // Google social login — needs GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET.
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
   },
 
   database: mongodbAdapter(db, {

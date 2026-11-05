@@ -1,9 +1,8 @@
-
+﻿
 import Image from "next/image";
 import { BookOpen, UserRound, Mail, ArrowLeft } from "lucide-react";
 
 
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
     Card,
@@ -20,6 +19,10 @@ export type Book = {
     category: string;
     image: string;
     description: string;
+    /** Total copies the library owns. */
+    totalCopies?: number;
+    /** Copies currently free to borrow — 0 disables the Borrow button. */
+    availableCopies?: number;
     userName?: string;
     userEmail?: string;
     addedBy?: {
@@ -120,9 +123,36 @@ const BookDetails = ({ book }: { book: Book }) => {
                                 {/* Borrow Button + Modal */}
                                 <BorrowDialog book={book} />
 
+                                {/* Copies left in the library */}
+                                <p className="text-sm text-muted-foreground">
+                                    {typeof book.totalCopies === "number" && (
+                                        <>
+                                            Total copies:{" "}
+                                            <b className="text-foreground">
+                                                {book.totalCopies}
+                                            </b>
+                                            {" · "}
+                                        </>
+                                    )}
+                                    Available now:{" "}
+                                    <b
+                                        className={
+                                            (book.availableCopies ??
+                                                book.totalCopies ??
+                                                1) > 0
+                                                ? "text-foreground"
+                                                : "text-destructive"
+                                        }
+                                    >
+                                        {book.availableCopies ??
+                                            book.totalCopies ??
+                                            1}
+                                    </b>
+                                </p>
+
                                 <div className="mb-6">
                                     <Link
-                                        href="/all-books"
+                                        href="/books"
                                         className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                     >
                                         <ArrowLeft className="mr-2 h-4 w-4" />

@@ -1,18 +1,20 @@
 import Link from "next/link";
-import { BookCard } from "@/app/all-books/_component/book-card";
+import { API_BASE } from "@/lib/api";
+import { BookCard } from "@/app/books/_component/book-card";
 import { toBookCardData, type ApiBook, type BookCardData } from "@/lib/books";
+import { FadeIn } from "@/components/motion/fade-in";
 
 export const metadata = {
   title: "All Books",
 };
 
-/** Load books from the backend — never throws, so the page can show a fallback. */
+/** Load books from the backend â€” never throws, so the page can show a fallback. */
 async function loadBooks(): Promise<{
   books: BookCardData[];
   failed: boolean;
 }> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URL}/books`, {
+    const res = await fetch(`${API_BASE}/books`, {
       cache: "no-store",
     });
 
@@ -40,7 +42,7 @@ export default async function AllBooksPage() {
 
       {failed ? (
         <div className="mt-8 rounded-lg border border-dashed p-12 text-center text-sm text-muted-foreground">
-          Couldn&apos;t load books right now — check that the backend server is
+          Couldn&apos;t load books right now â€” check that the backend server is
           running.
         </div>
       ) : books.length === 0 ? (
@@ -54,11 +56,13 @@ export default async function AllBooksPage() {
           </Link>
         </div>
       ) : (
-        <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-3">
-          {books.map((book) => (
-            <BookCard key={book.id} book={book} />
-          ))}
-        </div>
+        <FadeIn className="mt-8">
+          <div className="grid grid-cols-2 gap-5 md:grid-cols-3">
+            {books.map((book) => (
+              <BookCard key={book.id} book={book} />
+            ))}
+          </div>
+        </FadeIn>
       )}
     </div>
   );

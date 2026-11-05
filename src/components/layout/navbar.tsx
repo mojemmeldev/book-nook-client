@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -8,11 +8,11 @@ import { BookOpen, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
 import { UserDropdown } from "@/components/layout/user-dropdown";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 const publicNavLinks = [
   { href: "/", label: "Home" },
-  { href: "/all-books", label: "All Books" },
-  { href: "/about", label: "About" },
+  { href: "/books", label: "All Books" },
 ];
 
 const privateNavLinks = [
@@ -77,8 +77,9 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* Desktop right: Auth state */}
+        {/* Desktop right: Theme + Auth state */}
         <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle />
           {isPending ? (
             <div className="h-9 w-24 animate-pulse rounded-md bg-muted" />
           ) : user ? (
@@ -101,8 +102,9 @@ export function Navbar() {
           )}
         </div>
 
-        {/* Mobile: Avatar + Menu Toggle */}
+        {/* Mobile: Theme + Avatar + Menu Toggle */}
         <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
           {user && <UserDropdown user={user} size="sm" />}
 
           <button

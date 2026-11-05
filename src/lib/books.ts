@@ -202,6 +202,15 @@ export type ApiBook = {
   /** Cover URL — currently `{}` for records saved before uploads were wired. */
   image?: unknown;
   description?: string;
+  /** Total copies owned by the library (challenge requirement). */
+  totalCopies?: number;
+  /** Copies that are not borrowed right now — 0 means "Not Available". */
+  availableCopies?: number;
+  /** ISO date string set when the book was added. */
+  createdAt?: string;
+  userName?: string;
+  userEmail?: string;
+  creatorEmail?: string;
 };
 
 /** Minimal book shape the reusable `BookCard` needs to render. */
@@ -212,6 +221,10 @@ export type BookCardData = {
   category?: string;
   /** Cover URL — the card shows a placeholder when it is missing. */
   image?: string;
+  /** Total copies of this book in the library. */
+  totalCopies?: number;
+  /** Copies left to borrow — 0 disables the Borrow button. */
+  availableCopies?: number;
 };
 
 /** Map a backend book onto the shape `BookCard` renders. */
@@ -224,5 +237,7 @@ export function toBookCardData(book: ApiBook): BookCardData {
     author: book.author?.trim() || "Unknown author",
     category: book.category?.trim() || undefined,
     image: image || undefined,
+    totalCopies: book.totalCopies,
+    availableCopies: book.availableCopies,
   };
 }

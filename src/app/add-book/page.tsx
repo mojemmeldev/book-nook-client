@@ -1,7 +1,11 @@
 
 import React from "react";
 import Add_Book_Form from "./_component/Add_Book_Form";
+import type { Metadata } from "next";
 
+export const metadata: Metadata = {
+  title: "Add Book",
+};
 
 const AddBooksPage = () => {
   return (

@@ -19,6 +19,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/components/ui/toast";
 import { signIn } from "@/lib/auth-client";
+import { GoogleButton } from "@/components/auth/google-button";
 
 function SignInContent() {
   const router = useRouter();
@@ -155,6 +156,20 @@ function SignInContent() {
                 "Login"
               )}
             </Button>
+
+            {/* Social login (Google) */}
+            <div className="relative w-full">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" aria-hidden="true" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">
+                  or continue with
+                </span>
+              </div>
+            </div>
+
+            <GoogleButton callbackURL={targetRoute} />
 
             {/* Signup Link */}
             <div className="text-center text-sm text-muted-foreground">

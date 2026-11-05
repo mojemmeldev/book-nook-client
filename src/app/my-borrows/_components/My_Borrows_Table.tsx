@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { API_BASE } from "@/lib/api";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BookOpen, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authHeaders } from "@/lib/auth-client";
@@ -42,6 +44,7 @@ type BorrowRowProps = {
 
 function My_Borrows_Row({ borrow, onReturned }: BorrowRowProps) {
   const [isReturning, setIsReturning] = useState(false);
+  const router = useRouter();
 
   const title = borrow.bookTitle?.trim() || "Untitled";
   const bookId = borrow.bookId;
@@ -52,7 +55,7 @@ function My_Borrows_Row({ borrow, onReturned }: BorrowRowProps) {
     try {
       const headers = await authHeaders();
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_BASE_URL}/books/borrows/${borrow._id}`,
+        `${API_BASE}/books/borrows/${borrow._id}`,
         { method: "DELETE", headers },
       );
 
@@ -60,11 +63,13 @@ function My_Borrows_Row({ borrow, onReturned }: BorrowRowProps) {
 
       toast.add({
         title: "Book returned",
-        description: `“${title}” has been removed from your borrows.`,
+        description: `â€œ${title}â€ has been removed from your borrows.`,
         type: "success",
       });
 
       onReturned(borrow._id);
+      // Refresh server data so the book's "available copies" updates too.
+      router.refresh();
     } catch {
       toast.add({
         title: "Couldn't return the book",
@@ -105,7 +110,7 @@ function My_Borrows_Row({ borrow, onReturned }: BorrowRowProps) {
           <span className="line-clamp-2 font-medium" title={title}>
             {bookId ? (
               <Link
-                href={`/all-books/${bookId}`}
+                href={`/books/${bookId}`}
                 className="hover:underline"
               >
                 {title}
@@ -122,12 +127,12 @@ function My_Borrows_Row({ borrow, onReturned }: BorrowRowProps) {
 
       {/* Borrow Date */}
       <TableCell className="whitespace-nowrap text-muted-foreground">
-        {borrow.borrowDate?.trim() || "—"}
+        {borrow.borrowDate?.trim() || "â€”"}
       </TableCell>
 
       {/* Return Date */}
       <TableCell className="whitespace-nowrap text-muted-foreground">
-        {borrow.returnDate?.trim() || "—"}
+        {borrow.returnDate?.trim() || "â€”"}
       </TableCell>
 
       {/* Return Book */}

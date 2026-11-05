@@ -1,4 +1,4 @@
-import Image from "next/image";
+﻿import Image from "next/image";
 import Link from "next/link";
 import { BookOpen, User } from "lucide-react";
 import type { BookCardData } from "@/lib/books";
@@ -8,7 +8,7 @@ type BookCardProps = {
 };
 
 /**
- * Reusable book card — cover, category, title and author.
+ * Reusable book card â€” cover, category, title and author.
  *
  * Used by New Arrivals and the All Books grid. Accepts any book shaped like
  * `BookCardData` (dummy books satisfy it directly; backend books go through
@@ -18,7 +18,7 @@ export function BookCard({ book }: BookCardProps) {
   return (
     <div className="group flex flex-col overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-md">
       <Link
-        href={`/all-books/${book.id}`}
+        href={`/books/${book.id}`}
         className="relative block aspect-[2/3] overflow-hidden bg-muted"
         aria-label={`View details for ${book.title}`}
       >
@@ -59,7 +59,7 @@ export function BookCard({ book }: BookCardProps) {
         </p>
 
         <Link
-          href={`/all-books/${book.id}`}
+          href={`/books/${book.id}`}
           className="mt-4 inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
         >
           View Details

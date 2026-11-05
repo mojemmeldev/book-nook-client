@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { BookOpen, Mail, MapPin, Phone } from "lucide-react";
 
 const contactInfo = [
@@ -45,7 +45,7 @@ const socialLinks = [
 
 const quickLinks = [
   { href: "/", label: "Home" },
-  { href: "/all-books", label: "All Books" },
+  { href: "/books", label: "All Books" },
   { href: "/add-book", label: "Add Book" },
   { href: "/my-books", label: "My Books" },
   { href: "/my-borrows", label: "My Borrows" },
@@ -139,7 +139,7 @@ export function Footer() {
       <div className="border-t">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-5 text-sm text-muted-foreground sm:flex-row sm:px-6">
           <p>
-            © {new Date().getFullYear()} BookNook. All rights reserved.
+            Â© {new Date().getFullYear()} BookNook. All rights reserved.
           </p>
           <p className="font-medium">
             Add a book. Borrow a book. Return a book.

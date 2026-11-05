@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { API_BASE } from "@/lib/api";
 import Link from "next/link";
 import { Spinner } from "@/components/ui/spinner";
 import { authHeaders, useSession } from "@/lib/auth-client";
@@ -15,7 +16,7 @@ export default function  MyBorrowsPage() {
   const [failed, setFailed] = useState(false);
 
   // Load the borrows that belong to the logged-in user from the backend.
-  // Uses GET /books/borrows/:email — the server matches on the `email` field
+  // Uses GET /books/borrows/:email â€” the server matches on the `email` field
   // that the booking form stores with each borrow. The better-auth JWT is
   // sent as a Bearer token so the backend can verify the session.
   useEffect(() => {
@@ -26,7 +27,7 @@ export default function  MyBorrowsPage() {
     (async () => {
       const headers = await authHeaders();
       fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_BASE_URL}/books/borrows/${encodeURIComponent(
+        `${API_BASE}/books/borrows/${encodeURIComponent(
           user.email,
         )}`,
         {
@@ -92,7 +93,7 @@ export default function  MyBorrowsPage() {
 
       {failed && (
         <div className="mt-8 rounded-lg border border-dashed p-12 text-center text-sm text-muted-foreground">
-          Couldn&apos;t load your borrows right now — check that the backend
+          Couldn&apos;t load your borrows right now â€” check that the backend
           server is running.
         </div>
       )}
@@ -109,7 +110,7 @@ export default function  MyBorrowsPage() {
         <div className="mt-8 rounded-lg border border-dashed p-12 text-center text-sm text-muted-foreground">
           You haven&apos;t borrowed any books yet.{" "}
           <Link
-            href="/all-books"
+            href="/books"
             className="font-medium text-foreground underline-offset-4 hover:underline"
           >
             Browse all books

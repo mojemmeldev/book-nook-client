@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -8,12 +8,12 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-/** Banner slides — swap the images/text for your own content any time. */
+/** Banner slides â€” swap the images/text for your own content any time. */
 const slides = [
   {
     id: "discover",
     title: "Find Your Next Favorite Book",
-    text: "Browse hundreds of titles across fiction, science, history and more — all in one quiet little library.",
+    text: "Browse hundreds of titles across fiction, science, history and more â€” all in one quiet little library.",
     image: "https://picsum.photos/seed/booknook-hero-1/1600/700",
   },
   {
@@ -64,7 +64,7 @@ export function HeroSlider() {
                   {slide.text}
                 </p>
                 <Link
-                  href="/all-books"
+                  href="/books"
                   className="mt-7 inline-flex w-fit items-center justify-center rounded-md bg-white px-6 py-3 text-sm font-semibold text-black transition-colors hover:bg-white/90"
                 >
                   Browse Books

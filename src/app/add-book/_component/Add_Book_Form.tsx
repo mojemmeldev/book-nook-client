@@ -2,10 +2,11 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import { API_BASE } from "@/lib/api";
 import { BookPlus, Loader2, Upload } from "lucide-react";
 
 import { toast } from "@/components/ui/toast"
-import { useSession } from "@/lib/auth-client";
+import { authHeaders, useSession } from "@/lib/auth-client";
 import { uploadImage } from "@/lib/upload-image";
 
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "
 const Add_Book_Form = () => {
 
 
-    const [formData, setFormData] = useState({ title: "", author: "", category: "", description: "", });
+    const [formData, setFormData] = useState({ title: "", author: "", category: "", description: "", totalCopies: "1", });
 
     const [image, setImage] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -57,22 +58,35 @@ const Add_Book_Form = () => {
         try {
             const form = e.currentTarget;
             const bookData = new FormData(form);
+
+            const totalCopies = Math.max(1, Number(bookData.get("totalCopies")) || 1);
             const book = {
                 title: bookData.get("title") as string,
                 author: bookData.get("author") as string,
                 category: bookData.get("category") as string,
                 description: bookData.get("description") as string,
+                totalCopies,
+                availableCopies: totalCopies,
+                // Date the book was added.
+                createdAt: new Date().toISOString(),
+                userName: user.name || "",
+                userEmail: user.email,
+                creatorEmail: user.email,
             };
 
             // Upload the cover image first, then send its URL with the book.
             const imageUrl = await uploadImage(image);
 
-            const result = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URL}/books`, {
+            // JWT — the backend verifies the Better Auth token on this route.
+            const headers = await authHeaders();
+
+            const result = await fetch(`${API_BASE}/books`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    ...headers,
                 },
-                body: JSON.stringify({ ...book, image: imageUrl, creatorEmail: user.email }),
+                body: JSON.stringify({ ...book, image: imageUrl }),
             },
             );
 
@@ -85,13 +99,19 @@ const Add_Book_Form = () => {
             console.log(book, "book");
             console.log(data);
 
+            toast.add({
+                title: "Book added",
+                description: `“${book.title}” is now in the BookNook library.`,
+                type: "success",
+            });
+
             // Reset the form after a successful add.
             form.reset();
             setImage(null);
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
-            setFormData({ title: "", author: "", category: "", description: "" });
+            setFormData({ title: "", author: "", category: "", description: "", totalCopies: "1" });
         }
         catch (err) {
             if (err instanceof Error) {
@@ -196,6 +216,30 @@ const Add_Book_Form = () => {
                                 </SelectItem>
                             </SelectContent>
                         </Select>
+                    </div>
+
+                    {/* Total Copies */}
+                    <div className="space-y-2">
+                        <Label htmlFor="totalCopies">
+                            Total Copies
+                        </Label>
+
+                        <Input
+                            id="totalCopies"
+                            name="totalCopies"
+                            type="number"
+                            min={1}
+                            step={1}
+                            placeholder="How many copies does the library own?"
+                            value={formData.totalCopies}
+                            onChange={handleChange}
+                            required
+                        />
+
+                        <p className="text-xs text-muted-foreground">
+                            Each borrow takes one copy away; returning it puts
+                            the copy back.
+                        </p>
                     </div>
 
                     {/* Book Image */}

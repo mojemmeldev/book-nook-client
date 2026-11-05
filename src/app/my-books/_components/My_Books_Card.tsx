@@ -1,31 +1,48 @@
+﻿"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { BookOpen, User } from "lucide-react";
-import type { BookCardData } from "@/lib/books";
+import { BookOpen, Pencil, Trash2, User } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { toBookCardData, type ApiBook } from "@/lib/books";
+import EditBookDialog from "./Edit_Book_Dialog";
+import DeleteBookDialog from "./Delete_Book_Dialog";
 
 type MyBooksCardProps = {
-  book: BookCardData;
+  book: ApiBook;
+  /** Called after a successful edit — keeps the parent list in sync. */
+  onUpdated: (book: ApiBook) => void;
+  /** Called after a successful delete — removes the card from the list. */
+  onDeleted: (id: string) => void;
 };
 
 /**
- * Reusable card for a book added by the logged-in user.
- *
- * Mirrors the All Books card layout (cover, category badge, title, author,
- * "View Details" link) and falls back to a placeholder icon when no cover
- * image is available.
+ * Card for a book added by the logged-in user: cover, category, title,
+ * author plus the Edit (prefilled form) and Delete (confirm modal) actions.
  */
-export default function MyBooksCard({ book }: MyBooksCardProps) {
+export default function MyBooksCard({
+  book,
+  onUpdated,
+  onDeleted,
+}: MyBooksCardProps) {
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  const display = toBookCardData(book);
+
   return (
-    <div className="group flex flex-col overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-md">
+    <div className="group flex h-full flex-col overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-md">
       <Link
-        href={`/all-books/${book.id}`}
+        href={`/books/${display.id}`}
         className="relative block aspect-[2/3] overflow-hidden bg-muted"
-        aria-label={`View details for ${book.title}`}
+        aria-label={`View details for ${display.title}`}
       >
-        {book.image ? (
+        {display.image ? (
           <Image
-            src={book.image}
-            alt={`Cover of ${book.title}`}
+            src={display.image}
+            alt={`Cover of ${display.title}`}
             fill
             sizes="(max-width: 768px) 50vw, 25vw"
             loading="lazy"
@@ -40,28 +57,68 @@ export default function MyBooksCard({ book }: MyBooksCardProps) {
       </Link>
 
       <div className="flex flex-1 flex-col p-4">
-        {book.category && (
+        {display.category && (
           <span className="w-fit rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-accent-foreground">
-            {book.category}
+            {display.category}
           </span>
         )}
 
-        <h3 className="mt-2 line-clamp-1 font-semibold" title={book.title}>
-          {book.title}
+        <h3 className="mt-2 line-clamp-1 font-semibold" title={display.title}>
+          {display.title}
         </h3>
 
         <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
           <User className="size-3.5" aria-hidden="true" />
-          {book.author}
+          {display.author}
         </p>
 
-        <Link
-          href={`/all-books/${book.id}`}
-          className="mt-4 inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
-        >
-          View Details
-        </Link>
+        <div className="mt-auto pt-4">
+          <Link
+            href={`/books/${display.id}`}
+            className="inline-flex w-full items-center justify-center rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
+          >
+            View Details
+          </Link>
+
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="cursor-pointer"
+              onClick={() => setIsEditOpen(true)}
+            >
+              <Pencil className="size-3.5" aria-hidden="true" />
+              Edit
+            </Button>
+
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              className="cursor-pointer"
+              onClick={() => setIsDeleteOpen(true)}
+            >
+              <Trash2 className="size-3.5" aria-hidden="true" />
+              Delete
+            </Button>
+          </div>
+        </div>
       </div>
+
+      <EditBookDialog
+        book={book}
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        onSaved={onUpdated}
+      />
+
+      <DeleteBookDialog
+        book={book}
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        onDeleted={onDeleted}
+      />
     </div>
   );
 }

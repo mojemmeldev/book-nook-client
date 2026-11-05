@@ -25,5 +25,7 @@ export const config = {
     "/my-borrows/:path*",
     "/my-books/:path*",
     "/add-book/:path*",
+    // Book details is a private route, but /books (the list) stays public.
+    "/books/:id",
   ],
 }

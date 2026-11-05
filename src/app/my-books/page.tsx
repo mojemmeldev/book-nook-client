@@ -1,23 +1,24 @@
 "use client"
 
 import { useEffect, useState } from "react";
+import { API_BASE } from "@/lib/api";
 import Link from "next/link";
 import { Spinner } from "@/components/ui/spinner";
 import { authHeaders, useSession } from "@/lib/auth-client";
-import { BookCard } from "@/app/all-books/_component/book-card";
-import { toBookCardData, type ApiBook, type BookCardData } from "@/lib/books";
+import { type ApiBook } from "@/lib/books";
 import My_Books_Card from "./_components/My_Books_Card";
 
 export default function MyBooksPage() {
   const { data: session, isPending } = useSession();
   const user = session?.user;
 
-  const [books, setBooks] = useState<BookCardData[]>([]);
+  const [books, setBooks] = useState<ApiBook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
   // Load every book from the backend, then keep only the ones added by the
-  // logged-in user (matched by creatorEmail).
+  // logged-in user (matched by creatorEmail). The JWT is sent as a Bearer
+  // token so the backend can verify the session.
   useEffect(() => {
     if (!user?.email) {
       return;
@@ -25,7 +26,7 @@ export default function MyBooksPage() {
 
     (async () => {
       const headers = await authHeaders();
-      fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URL}/books`, {
+      fetch(`${API_BASE}/books`, {
         cache: "no-store",
         headers,
       })
@@ -34,13 +35,9 @@ export default function MyBooksPage() {
         const data = await res.json();
         const allBooks = Array.isArray(data) ? (data as ApiBook[]) : [];
 
-        const myBooks = allBooks
-          .filter(
-            (book) =>
-              (book as ApiBook & { creatorEmail?: string }).creatorEmail ===
-              user.email,
-          )
-          .map(toBookCardData);
+        const myBooks = allBooks.filter(
+          (book) => book.creatorEmail === user.email,
+        );
 
         setBooks(myBooks);
         setFailed(false);
@@ -52,6 +49,18 @@ export default function MyBooksPage() {
       .finally(() => setIsLoading(false));
     })();
   }, [user?.email]);
+
+  // Keep a single card in sync after a successful edit.
+  function handleUpdated(updated: ApiBook) {
+    setBooks((prev) =>
+      prev.map((book) => (book._id === updated._id ? updated : book)),
+    );
+  }
+
+  // Remove the card immediately after a successful delete.
+  function handleDeleted(id: string) {
+    setBooks((prev) => prev.filter((book) => book._id !== id));
+  }
 
   // Session still loading
   if (isPending) {
@@ -121,7 +130,12 @@ export default function MyBooksPage() {
       {!failed && !isLoading && books.length > 0 && (
         <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
           {books.map((book) => (
-            <My_Books_Card key={book.id} book={book} />
+            <My_Books_Card
+              key={book._id}
+              book={book}
+              onUpdated={handleUpdated}
+              onDeleted={handleDeleted}
+            />
           ))}
         </div>
       )}

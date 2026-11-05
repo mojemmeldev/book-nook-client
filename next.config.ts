@@ -1,6 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Old links (and the assignment spec's previous naming) stay working.
+  async redirects() {
+    return [
+      {
+        source: "/all-books/:path*",
+        destination: "/books/:path*",
+        permanent: false,
+      },
+      { source: "/all-books", destination: "/books", permanent: false },
+    ];
+  },
   images: {
     // Dummy image sources — replace with your own storage later.
     remotePatterns: [

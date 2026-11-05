@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { API_BASE } from "@/lib/api";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { BookOpen, Loader2Icon, Lock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -16,7 +18,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/toast";
-import { useSession } from "@/lib/auth-client";
+import { authHeaders, useSession } from "@/lib/auth-client";
 import type { Book } from "./Book-Details";
 
 /** Borrow period: the book must be returned 7 days after borrowing. */
@@ -30,26 +32,62 @@ function toDateInput(date: Date): string {
 const BorrowDialog = ({ book }: { book: Book }) => {
     const { data: session, isPending } = useSession();
     const user = session?.user;
+    const router = useRouter();
+    const pathname = usePathname();
 
     const [isOpen, setIsOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const borrowDate = toDateInput(new Date());
-    const returnDate = toDateInput(
-        new Date(Date.now() + BORROW_DAYS * 24 * 60 * 60 * 1000),
+    /**
+     * Borrow period is computed when the dialog opens (not during render,
+     * so the component stays free of impure calls).
+     */
+    const [dates, setDates] = useState<{ borrow: string; return: string } | null>(
+        null,
     );
 
+    /** Copies left to borrow — 0 means the book is out of stock. */
+    const copiesLeft = book.availableCopies ?? book.totalCopies ?? 1;
+    const isUnavailable = copiesLeft <= 0;
+
+    const borrowDate = dates?.borrow ?? "";
+    const returnDate = dates?.return ?? "";
+
+    /** Signed-out visitors are sent to Login and brought back after signing in. */
+    function handleBorrowClick() {
+        if (isPending) return;
+
+        if (!user) {
+            router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
+            return;
+        }
+
+        setDates({
+            borrow: toDateInput(new Date()),
+            return: toDateInput(
+                new Date(Date.now() + BORROW_DAYS * 24 * 60 * 60 * 1000),
+            ),
+        });
+        setIsOpen(true);
+    }
+
     async function handleConfirmBorrow() {
-        if (!user) return;
+        if (!user || !dates) return;
 
         setIsSubmitting(true);
 
         try {
+            // JWT — the backend verifies the Better Auth token on this route.
+            const headers = await authHeaders();
+
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_SERVER_BASE_URL}/books/borrows`,
+                `${API_BASE}/books/borrows`,
                 {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...headers,
+                    },
                     body: JSON.stringify({
                         bookId: book._id,
                         bookTitle: book.title,
@@ -64,7 +102,24 @@ const BorrowDialog = ({ book }: { book: Book }) => {
             );
 
             if (!res.ok) {
-                throw new Error(`Request failed with status ${res.status}`);
+                // The backend explains why (409 = already borrowed, 401 = no
+                // session, 403 = no copies left, …).
+                let message = `Request failed with status ${res.status}`;
+                try {
+                    const data = (await res.json()) as {
+                        message?: string;
+                        error?: string;
+                    };
+                    message = data.message || data.error || message;
+                } catch {
+                    // Non-JSON body — keep the status message.
+                }
+
+                if (res.status === 401) {
+                    router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
+                }
+
+                throw new Error(message);
             }
 
             toast.add({
@@ -74,10 +129,15 @@ const BorrowDialog = ({ book }: { book: Book }) => {
             });
 
             setIsOpen(false);
-        } catch {
+            // Refresh so the copies counter on the page updates immediately.
+            router.refresh();
+        } catch (err) {
             toast.add({
                 title: "Couldn't borrow the book",
-                description: "Please try again in a moment.",
+                description:
+                    err instanceof Error
+                        ? err.message
+                        : "Please try again in a moment.",
                 type: "error",
             });
         } finally {
@@ -100,11 +160,11 @@ const BorrowDialog = ({ book }: { book: Book }) => {
             <Button
                 size="lg"
                 className="mt-4 w-full cursor-pointer"
-                onClick={() => setIsOpen(true)}
-                disabled={isPending}
+                onClick={handleBorrowClick}
+                disabled={isPending || isUnavailable}
             >
                 <BookOpen className="mr-2 h-5 w-5" />
-                Borrow This Book
+                {isUnavailable ? "Not Available" : "Borrow This Book"}
             </Button>
 
             <DialogContent className="sm:max-w-md">
@@ -201,7 +261,10 @@ const BorrowDialog = ({ book }: { book: Book }) => {
                             >
                                 Cancel
                             </Button>
-                            <Link href="/login" className="sm:w-auto">
+                            <Link
+                            href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}
+                            className="sm:w-auto"
+                          >
                                 <Button
                                     type="button"
                                     onClick={() => setIsOpen(false)}

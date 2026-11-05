@@ -12,6 +12,7 @@ import { UserDropdown } from "@/components/layout/user-dropdown";
 const publicNavLinks = [
   { href: "/", label: "Home" },
   { href: "/all-books", label: "All Books" },
+  { href: "/about", label: "About" },
 ];
 
 const privateNavLinks = [

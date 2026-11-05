@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 
+import BorrowDialog from "./Borrow_Dialog";
+
 export type Book = {
     _id: string;
     title: string;
@@ -115,14 +117,8 @@ const BookDetails = ({ book }: { book: Book }) => {
                                     </div>
                                 </div>
 
-                                {/* Borrow Button */}
-                                <Button
-                                    size="lg"
-                                    className="mt-4 w-full cursor-pointer"
-                                >
-                                    <BookOpen className="mr-2 h-5 w-5" />
-                                    Borrow This Book
-                                </Button>
+                                {/* Borrow Button + Modal */}
+                                <BorrowDialog book={book} />
 
                                 <div className="mb-6">
                                     <Link

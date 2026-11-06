@@ -41,6 +41,8 @@ export function GoogleButton({
           description: error.message || "Could not sign in with Google.",
           type: "error",
         });
+        // The request failed, so no redirect is coming — re-enable the button.
+        setLoading(false);
       }
       // On success Better Auth redirects the browser — no further handling.
     } catch {

@@ -23,6 +23,17 @@ export const auth = betterAuth({
     },
   },
 
+  // Resolve the public origin from each incoming request instead of a single
+  // fixed URL. A hardcoded BETTER_AUTH_URL (e.g. http://localhost:3000) makes
+  // Better Auth reject requests coming from other hosts with
+  // 403 INVALID_ORIGIN — which is exactly what happened on Vercel — and it
+  // also produces the wrong OAuth redirect URI.
+  baseURL: {
+    allowedHosts: ["localhost", "localhost:*", "*.vercel.app"],
+    // Used only when the request carries no usable Host header (tests, etc).
+    fallback: "http://localhost:3000",
+  },
+
   database: mongodbAdapter(db, {
     client,
   }),
